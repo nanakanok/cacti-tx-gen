@@ -1,0 +1,2 @@
+[console_scripts]
+cacti-tx-gen = cacti_tx_gen.cli:main

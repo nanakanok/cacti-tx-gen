@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cacti-tx-gen"
+version = "0.1.0"
+description = "Generate traffic from IX traffic report graphs via OTG"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.0",
+    "numpy>=1.24",
+    "opencv-python-headless>=4.8",
+    "pytesseract>=0.3",
+    "snappi>=1.0.0",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[project.scripts]
+cacti-tx-gen = "cacti_tx_gen.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
