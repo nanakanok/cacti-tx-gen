@@ -17,4 +17,5 @@ lab/trex/docker-compose.yml
 
 # Generated results (graphs, CSVs, timeseries)
 lab/**/traffic_results*
+!lab/trex/traffic_results_otg.png
 lab/**/timeseries.json
