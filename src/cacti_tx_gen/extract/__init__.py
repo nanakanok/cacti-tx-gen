@@ -1,4 +1,4 @@
-from cacti_tx_gen.extract.base import BaseExtractor
+from cacti_tx_gen.extract.base import BaseExtractor, TimeScale
 from cacti_tx_gen.extract.jpix import JPIXExtractor
 from cacti_tx_gen.extract.bbix import BBIXExtractor
 from cacti_tx_gen.extract.jpnap import JPNAPExtractor
@@ -9,4 +9,4 @@ EXTRACTORS = {
     "jpnap": JPNAPExtractor,
 }
 
-__all__ = ["BaseExtractor", "JPIXExtractor", "BBIXExtractor", "JPNAPExtractor", "EXTRACTORS"]
+__all__ = ["BaseExtractor", "TimeScale", "JPIXExtractor", "BBIXExtractor", "JPNAPExtractor", "EXTRACTORS"]

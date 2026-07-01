@@ -3,7 +3,7 @@
 import pytest
 from click import ClickException
 
-from cacti_tx_gen.cli import _parse_rate, _parse_duration, _detect_ix
+from cacti_tx_gen.cli import _parse_rate, _parse_duration, _detect_ix, _detect_scale
 
 
 class TestParseRate:
@@ -63,3 +63,35 @@ class TestDetectIx:
     def test_unknown_raises(self):
         with pytest.raises(ClickException):
             _detect_ix("/path/to/unknown_graph.png")
+
+
+class TestDetectScale:
+    def test_bbix_daily(self):
+        assert _detect_scale("TK_d.png") == "daily"
+
+    def test_bbix_weekly(self):
+        assert _detect_scale("total_w.png") == "weekly"
+
+    def test_bbix_monthly(self):
+        assert _detect_scale("TK_m.png") == "monthly"
+
+    def test_bbix_yearly(self):
+        assert _detect_scale("total_y.png") == "yearly"
+
+    def test_jpnap_daily(self):
+        assert _detect_scale("jpnap_tokyo_day.png") == "daily"
+
+    def test_jpnap_yearly(self):
+        assert _detect_scale("jpnap_total_year.png") == "yearly"
+
+    def test_jpix_24h(self):
+        assert _detect_scale("TOTAL.In.png") == "daily"
+
+    def test_url_bbix_weekly(self):
+        assert _detect_scale("https://www.bbix.net/bbix_traffic/total_w.png") == "weekly"
+
+    def test_url_jpnap_yearly(self):
+        assert _detect_scale("https://www.jpnap.net/assets/traffic/jpnap_tokyo_year.png") == "yearly"
+
+    def test_unknown_defaults_daily(self):
+        assert _detect_scale("unknown_graph.png") == "daily"

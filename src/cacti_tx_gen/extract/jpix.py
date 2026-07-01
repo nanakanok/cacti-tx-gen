@@ -5,16 +5,17 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from cacti_tx_gen.extract.base import BaseExtractor
+from cacti_tx_gen.extract.base import BaseExtractor, TimeScale
 
 
 class JPIXExtractor(BaseExtractor):
-    """Extract time-series from JPIX daily traffic graph (green area chart)."""
+    """Extract time-series from JPIX traffic graph (green area chart)."""
 
     ix_name = "jpix"
 
-    def __init__(self, y_max_bps: float | None = None):
+    def __init__(self, y_max_bps: float | None = None, scale: TimeScale = TimeScale.DAILY):
         self._y_max_override = y_max_bps
+        self._scale = scale
 
     def extract(self, image_path: str, y_max_bps: float | None = None) -> dict:
         if y_max_bps is not None:

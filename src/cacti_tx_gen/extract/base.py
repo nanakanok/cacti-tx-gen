@@ -5,12 +5,35 @@ from __future__ import annotations
 import json
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone, timedelta
+from enum import Enum
 from pathlib import Path
 
 import cv2
 import numpy as np
 
 JST = timezone(timedelta(hours=9))
+
+
+class TimeScale(Enum):
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
+
+
+SCALE_DURATION_SEC = {
+    TimeScale.DAILY: 86400,
+    TimeScale.WEEKLY: 604800,
+    TimeScale.MONTHLY: 2592000,
+    TimeScale.YEARLY: 31536000,
+}
+
+SCALE_RESAMPLE_SEC = {
+    TimeScale.DAILY: 300,
+    TimeScale.WEEKLY: 1800,
+    TimeScale.MONTHLY: 7200,
+    TimeScale.YEARLY: 86400,
+}
 
 
 class BaseExtractor(ABC):
@@ -125,8 +148,14 @@ class BaseExtractor(ABC):
         return 0.0
 
     def _get_total_duration_sec(self) -> float:
-        """Total time span of the graph. Default 24h for daily graphs."""
-        return 86400.0
+        """Total time span of the graph, determined by scale."""
+        scale = getattr(self, "_scale", TimeScale.DAILY)
+        return float(SCALE_DURATION_SEC[scale])
+
+    def _get_default_resample_interval(self) -> int:
+        """Default resample interval for the current scale."""
+        scale = getattr(self, "_scale", TimeScale.DAILY)
+        return SCALE_RESAMPLE_SEC[scale]
 
     def _estimate_interval(self, points: list[dict], region: dict) -> int:
         """Estimate the sampling interval from the points."""

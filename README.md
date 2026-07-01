@@ -6,9 +6,9 @@ A CLI tool that extracts traffic patterns from IX (Internet Exchange) traffic re
 
 ## Overview
 
-Japanese IX operators (JPNAP, JPIX, BBIX) publish daily aggregate bandwidth graphs as MRTG/RRDtool-style PNG area charts. These graphs show 24-hour traffic patterns that are useful for capacity planning, but there's no machine-readable data behind them — just pixels.
+Japanese IX operators (JPNAP, JPIX, BBIX) publish aggregate bandwidth graphs as MRTG/RRDtool-style PNG area charts at various time scales (daily, weekly, monthly, yearly). These graphs are useful for capacity planning, but there's no machine-readable data behind them — just pixels.
 
-cacti-tx-gen reads those PNGs, extracts the bandwidth time-series via OpenCV pixel analysis, and produces traffic generator configs that reproduce the same traffic shape at any target link speed.
+cacti-tx-gen reads those PNGs (from local files or directly from IX URLs), extracts the bandwidth time-series via OpenCV pixel analysis, and produces traffic generator configs that reproduce the same traffic shape at any target link speed.
 
 ```
 IX graph PNG ──→ extract ──→ timeseries JSON ──→ generate ──→ OTG config YAML ──→ convert-ns3 ──→ NS3 scenario .py
@@ -19,10 +19,12 @@ The pipeline uses [OTG (Open Traffic Generator)](https://otg.dev/) as the canoni
 ## Features
 
 - **Three IX parsers**: JPIX, BBIX, JPNAP — each tuned to its graph's color scheme, axis layout, and gridline spacing
+- **Multi-scale extraction**: supports daily (24h), weekly (7d), monthly (30d), and yearly (365d) graph scales — auto-detected from filename
+- **HTTPS URL input**: fetch graphs directly from IX traffic pages (e.g., `https://www.bbix.net/bbix_traffic/total_w.png`)
 - **Gridline calibration**: auto-detects Y-axis scale from gridline positions (critical for BBIX which doesn't start at 0)
 - **HSV color detection**: finds the fill-top boundary per pixel column using color-space analysis, not edge detection
 - **Linear scaling**: `--peak-rate` maps the source peak (e.g., 4 Tb/s) to the target (e.g., 10 Gb/s) while preserving the relative shape
-- **Time compression**: `--duration` compresses 24h of traffic into any target duration (e.g., 1h, 10m)
+- **Time compression**: `--duration` compresses traffic into any target duration (e.g., 1h, 10m)
 - **OTG output**: one flow per time-slice with fixed rate + duration, compatible with ixia-c, TRex (via snappi-trex), and other OTG-capable generators
 - **NS3 conversion**: generates a standalone Python scenario using OnOffApplication with rate schedule
 
@@ -43,8 +45,13 @@ sudo apt install tesseract-ocr   # Debian/Ubuntu
 ## Quick Start
 
 ```bash
-# 1. Extract time-series from an IX traffic graph
+# 1. Extract time-series from an IX traffic graph (local file or URL)
 cacti-tx-gen extract jpnap_tokyo_day.png --ix jpnap -o timeseries.json
+cacti-tx-gen extract https://www.bbix.net/bbix_traffic/total_d.png --ix bbix -o timeseries.json
+
+# Extract from non-daily scales (auto-detected from filename, or explicit --scale)
+cacti-tx-gen extract https://www.bbix.net/bbix_traffic/total_w.png -o weekly.json       # weekly
+cacti-tx-gen extract https://www.jpnap.net/assets/traffic/jpnap_tokyo_year.png -o yearly.json  # yearly
 
 # 2. Generate OTG config scaled to 10 Gbps peak, compressed to 10 minutes
 cacti-tx-gen generate timeseries.json --peak-rate 10Gbps --duration 10m -o config.yaml
@@ -57,13 +64,23 @@ cacti-tx-gen convert-ns3 config.yaml -o scenario.py
 
 ### `cacti-tx-gen extract <image>`
 
-Extract time-series data from an IX traffic graph PNG.
+Extract time-series data from an IX traffic graph. IMAGE can be a local file path or an HTTPS URL.
 
 | Option | Description |
 |---|---|
 | `--ix` | IX type: `jpix`, `bbix`, `jpnap` (auto-detected from filename if omitted) |
+| `--scale` | Graph time scale: `daily`, `weekly`, `monthly`, `yearly` (auto-detected from filename if omitted) |
 | `--y-max` | Y-axis maximum (e.g., `4Tbps`). Auto-detected from gridlines if omitted |
 | `-o` | Output JSON file (default: stdout) |
+
+Scale auto-detection from filename:
+
+| Pattern | Scale | Duration | Resample interval |
+|---|---|---|---|
+| `*_d.png`, `*_day.png`, `TOTAL.In.png` | daily | 24h | 300s (5min) |
+| `*_w.png` | weekly | 7d | 1800s (30min) |
+| `*_m.png` | monthly | 30d | 7200s (2h) |
+| `*_y.png`, `*_year.png` | yearly | 365d | 86400s (1d) |
 
 ### `cacti-tx-gen generate <timeseries.json>`
 
@@ -107,8 +124,8 @@ Validated against known AVG/MAX values from each IX's stats text:
 | `extract/jpnap.py` | Done | JPNAP parser: pink fill, gridline-based Y-axis auto-detection |
 | `generate/otg.py` | Done | OTG config generation: per-slice flows, rate scaling, time compression |
 | `convert/ns3.py` | Done | NS3 scenario generation: OnOffApplication with rate schedule |
-| `cli.py` | Done | CLI with `extract`, `generate`, `convert-ns3` subcommands |
-| Tests | Done | 64 tests (extract, generate, convert, CLI integration, utilities) |
+| `cli.py` | Done | CLI with `extract`, `generate`, `convert-ns3` subcommands; URL input, scale auto-detection |
+| Tests | Done | 85 tests (extract, generate, convert, CLI integration, utilities, scale detection) |
 | TG validation | Done | Validated on ixia-c, TRex, xdperf via containerlab |
 
 ## Project Structure
@@ -201,9 +218,9 @@ IX（Internet Exchange）のトラフィックレポート PNG 画像からト�
 
 ## 概要
 
-日本の IX 事業者（JPNAP、JPIX、BBIX）は、MRTG/RRDtool 形式の PNG 面グラフとして日次の集約帯域グラフを公開しています。これらのグラフは 24 時間のトラフィックパターンを示しており、キャパシティプランニングに有用ですが、背後に機械可読なデータはなく、ピクセルだけです。
+日本の IX 事業者（JPNAP、JPIX、BBIX）は、MRTG/RRDtool 形式の PNG 面グラフとして集約帯域グラフを各種タイムスケール（日次、週次、月次、年次）で公開しています。これらのグラフはキャパシティプランニングに有用ですが、背後に機械可読なデータはなく、ピクセルだけです。
 
-cacti-tx-gen はこれらの PNG を読み取り、OpenCV のピクセル解析で帯域時系列を抽出し、任意のターゲットリンク速度で同じトラフィック形状を再現するトラフィックジェネレータ設定を生成します。
+cacti-tx-gen はこれらの PNG を（ローカルファイルまたは IX の URL から直接）読み取り、OpenCV のピクセル解析で帯域時系列を抽出し、任意のターゲットリンク速度で同じトラフィック形状を再現するトラフィックジェネレータ設定を生成します。
 
 ```
 IX グラフ PNG ──→ extract ──→ 時系列 JSON ──→ generate ──→ OTG 設定 YAML ──→ convert-ns3 ──→ NS3 シナリオ .py
@@ -214,10 +231,12 @@ IX グラフ PNG ──→ extract ──→ 時系列 JSON ──→ generate �
 ## 特長
 
 - **3 つの IX パーサ**: JPIX、BBIX、JPNAP — それぞれのグラフの配色、軸レイアウト、グリッド線間隔に合わせてチューニング
+- **マルチスケール抽出**: 日次（24h）、週次（7d）、月次（30d）、年次（365d）のグラフスケールに対応 — ファイル名から自動検出
+- **HTTPS URL 入力**: IX トラフィックページから直接グラフを取得（例: `https://www.bbix.net/bbix_traffic/total_w.png`）
 - **グリッド線キャリブレーション**: グリッド線位置から Y 軸スケールを自動検出（Y 軸が 0 始まりでない BBIX で特に重要）
 - **HSV 色検出**: エッジ検出ではなく色空間解析で、ピクセル列ごとに塗りつぶしの上端境界を検出
 - **線形スケーリング**: `--peak-rate` でソースのピーク（例: 4 Tb/s）をターゲット（例: 10 Gb/s）にマッピングし、相対的な形状を保持
-- **時間圧縮**: `--duration` で 24 時間分のトラフィックを任意の長さ（例: 1h、10m）に圧縮
+- **時間圧縮**: `--duration` でトラフィックを任意の長さ（例: 1h、10m）に圧縮
 - **OTG 出力**: タイムスライスごとに固定レート＋固定時間のフローを 1 つ生成。ixia-c、TRex（snappi-trex 経由）など OTG 対応ジェネレータと互換
 - **NS3 変換**: レートスケジュール付き OnOffApplication を使用するスタンドアロン Python シナリオを生成
 
@@ -238,8 +257,13 @@ sudo apt install tesseract-ocr   # Debian/Ubuntu
 ## 使い方
 
 ```bash
-# 1. IX トラフィックグラフから時系列を抽出
+# 1. IX トラフィックグラフから時系列を抽出（ローカルファイルまたは URL）
 cacti-tx-gen extract jpnap_tokyo_day.png --ix jpnap -o timeseries.json
+cacti-tx-gen extract https://www.bbix.net/bbix_traffic/total_d.png --ix bbix -o timeseries.json
+
+# 日次以外のスケールで抽出（ファイル名から自動検出、または --scale で明示指定）
+cacti-tx-gen extract https://www.bbix.net/bbix_traffic/total_w.png -o weekly.json       # 週次
+cacti-tx-gen extract https://www.jpnap.net/assets/traffic/jpnap_tokyo_year.png -o yearly.json  # 年次
 
 # 2. ピーク 10 Gbps、10 分に圧縮した OTG 設定を生成
 cacti-tx-gen generate timeseries.json --peak-rate 10Gbps --duration 10m -o config.yaml
@@ -252,13 +276,23 @@ cacti-tx-gen convert-ns3 config.yaml -o scenario.py
 
 ### `cacti-tx-gen extract <image>`
 
-IX トラフィックグラフ PNG から時系列データを抽出。
+IX トラフィックグラフから時系列データを抽出。IMAGE はローカルファイルパスまたは HTTPS URL。
 
 | オプション | 説明 |
 |---|---|
 | `--ix` | IX タイプ: `jpix`、`bbix`、`jpnap`（省略時はファイル名から自動検出） |
+| `--scale` | グラフのタイムスケール: `daily`、`weekly`、`monthly`、`yearly`（省略時はファイル名から自動検出） |
 | `--y-max` | Y 軸最大値（例: `4Tbps`）。省略時はグリッド線から自動検出 |
 | `-o` | 出力 JSON ファイル（デフォルト: 標準出力） |
+
+ファイル名からのスケール自動検出:
+
+| パターン | スケール | 期間 | リサンプリング間隔 |
+|---|---|---|---|
+| `*_d.png`、`*_day.png`、`TOTAL.In.png` | daily | 24h | 300s（5分） |
+| `*_w.png` | weekly | 7d | 1800s（30分） |
+| `*_m.png` | monthly | 30d | 7200s（2時間） |
+| `*_y.png`、`*_year.png` | yearly | 365d | 86400s（1日） |
 
 ### `cacti-tx-gen generate <timeseries.json>`
 
@@ -302,8 +336,8 @@ OTG 設定 YAML をスタンドアロン NS3 Python シナリオに変換。
 | `extract/jpnap.py` | 完了 | JPNAP パーサ: ピンク色塗りつぶし、グリッド線ベースの Y 軸自動検出 |
 | `generate/otg.py` | 完了 | OTG 設定生成: スライスごとのフロー、レートスケーリング、時間圧縮 |
 | `convert/ns3.py` | 完了 | NS3 シナリオ生成: レートスケジュール付き OnOffApplication |
-| `cli.py` | 完了 | `extract`、`generate`、`convert-ns3` サブコマンド付き CLI |
-| テスト | 完了 | 64 テスト（extract、generate、convert、CLI 統合、ユーティリティ） |
+| `cli.py` | 完了 | `extract`、`generate`、`convert-ns3` サブコマンド付き CLI; URL 入力、スケール自動検出 |
+| テスト | 完了 | 85 テスト（extract、generate、convert、CLI 統合、ユーティリティ、スケール検出） |
 | TG 実機検証 | 完了 | ixia-c / TRex / xdperf を containerlab で検証済み |
 
 ## プロジェクト構成

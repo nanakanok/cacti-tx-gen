@@ -5,11 +5,11 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from cacti_tx_gen.extract.base import BaseExtractor
+from cacti_tx_gen.extract.base import BaseExtractor, TimeScale
 
 
 class BBIXExtractor(BaseExtractor):
-    """Extract time-series from BBIX daily traffic graph (green area chart).
+    """Extract time-series from BBIX traffic graph (green area chart).
 
     BBIX graphs use MRTG/RRDtool with auto-scaled Y-axis that may not start at 0.
     This extractor uses gridline positions to calibrate the Y-axis scale.
@@ -17,8 +17,9 @@ class BBIXExtractor(BaseExtractor):
 
     ix_name = "bbix"
 
-    def __init__(self, y_max_bps: float | None = None):
+    def __init__(self, y_max_bps: float | None = None, scale: TimeScale = TimeScale.DAILY):
         self._y_max_override = y_max_bps
+        self._scale = scale
         self._y_min_bps = 0.0
         self._y_max_bps = y_max_bps or 8.0e12
 

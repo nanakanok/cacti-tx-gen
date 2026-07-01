@@ -6,9 +6,11 @@ from urllib.parse import urlparse
 import click
 import requests
 
-from cacti_tx_gen.extract import EXTRACTORS
+from cacti_tx_gen.extract import EXTRACTORS, TimeScale
 from cacti_tx_gen.generate.otg import generate_otg_config
 from cacti_tx_gen.convert.ns3 import convert_to_ns3
+
+SCALE_CHOICES = [s.value for s in TimeScale]
 
 
 @click.group()
@@ -24,23 +26,32 @@ def main():
               default=None, help="IX type (auto-detected if omitted)")
 @click.option("--y-max", type=str, default=None,
               help="Y-axis maximum value (e.g., 4Tbps, 8Tbps). Auto-detected if omitted.")
-def extract(image, output, ix, y_max):
+@click.option("--scale", type=click.Choice(SCALE_CHOICES), default=None,
+              help="Graph time scale (auto-detected from filename if omitted).")
+def extract(image, output, ix, y_max, scale):
     """Extract time-series data from an IX traffic graph image.
 
     IMAGE can be a local file path or an HTTPS URL.
+    Supported scales: daily (24h), weekly (7d), monthly (30d), yearly (365d).
     """
     image_path = _resolve_image(image)
     try:
         if ix is None:
             ix = _detect_ix(image)
 
+        if scale is None:
+            scale = _detect_scale(image)
+        time_scale = TimeScale(scale)
+
         y_max_bps = _parse_rate(y_max) if y_max else None
-        extractor = EXTRACTORS[ix](y_max_bps=y_max_bps)
+        extractor = EXTRACTORS[ix](y_max_bps=y_max_bps, scale=time_scale)
         timeseries = extractor.extract(image_path)
 
-        resampled_points = extractor._resample(timeseries["points"], 300)
+        resample_interval = extractor._get_default_resample_interval()
+        resampled_points = extractor._resample(timeseries["points"], resample_interval)
         timeseries["points"] = resampled_points
-        timeseries["interval_sec"] = 300
+        timeseries["interval_sec"] = resample_interval
+        timeseries["scale"] = scale
 
         data = json.dumps(timeseries, indent=2, ensure_ascii=False)
         if output:
@@ -136,6 +147,20 @@ def _resolve_image(image: str) -> str:
     if not Path(image).exists():
         raise click.ClickException(f"File not found: {image}")
     return image
+
+
+def _detect_scale(image: str) -> str:
+    """Auto-detect graph time scale from filename or URL."""
+    name = Path(urlparse(image).path).name.lower()
+    if name.endswith("_w.png"):
+        return "weekly"
+    if name.endswith("_m.png"):
+        return "monthly"
+    if name.endswith(("_y.png", "_year.png")):
+        return "yearly"
+    if "_year" in name:
+        return "yearly"
+    return "daily"
 
 
 def _detect_ix(image_path: str) -> str:

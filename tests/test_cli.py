@@ -76,6 +76,35 @@ class TestExtractCommand:
         assert data["source"] == "jpix"
 
 
+    def test_extract_with_scale(self, runner, tmp_path):
+        output = tmp_path / "out.json"
+        result = runner.invoke(main, [
+            "extract", str(FIXTURES / "bbix_sample.png"),
+            "--ix", "bbix", "--scale", "weekly",
+            "-o", str(output),
+        ])
+
+        assert result.exit_code == 0
+        data = json.loads(output.read_text())
+        assert data["scale"] == "weekly"
+        assert data["interval_sec"] == 1800
+        last_t = data["points"][-1]["t"]
+        assert last_t > 500000
+
+    def test_extract_scale_auto_detect(self, runner, tmp_path):
+        output = tmp_path / "out.json"
+        result = runner.invoke(main, [
+            "extract", str(FIXTURES / "jpnap_sample.png"),
+            "--ix", "jpnap",
+            "-o", str(output),
+        ])
+
+        assert result.exit_code == 0
+        data = json.loads(output.read_text())
+        assert data["scale"] == "daily"
+        assert data["interval_sec"] == 300
+
+
 class TestGenerateCommand:
     @pytest.fixture
     def timeseries_file(self, runner, tmp_path):

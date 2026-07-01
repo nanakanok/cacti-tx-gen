@@ -5,11 +5,11 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from cacti_tx_gen.extract.base import BaseExtractor
+from cacti_tx_gen.extract.base import BaseExtractor, TimeScale
 
 
 class JPNAPExtractor(BaseExtractor):
-    """Extract time-series from JPNAP daily traffic graph (pink area chart).
+    """Extract time-series from JPNAP traffic graph (pink area chart).
 
     JPNAP graphs show incoming traffic with a pink/salmon fill.
     Multiple series (current, 1-week ago, 2-week ago) are overlaid;
@@ -18,8 +18,9 @@ class JPNAPExtractor(BaseExtractor):
 
     ix_name = "jpnap"
 
-    def __init__(self, y_max_bps: float | None = None):
+    def __init__(self, y_max_bps: float | None = None, scale: TimeScale = TimeScale.DAILY):
         self._y_max_override = y_max_bps
+        self._scale = scale
         self._gridline_ref_y = None
         self._gridline_ref_val = 4.0e12
         self._gridline_step_px = 37
