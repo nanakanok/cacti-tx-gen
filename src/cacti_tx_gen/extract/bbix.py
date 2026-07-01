@@ -17,9 +17,11 @@ class BBIXExtractor(BaseExtractor):
 
     ix_name = "bbix"
 
-    def __init__(self, y_max_bps: float | None = None, scale: TimeScale = TimeScale.DAILY):
+    def __init__(self, y_max_bps: float | None = None, scale: TimeScale = TimeScale.DAILY,
+                 total_duration_sec: float | None = None, series: str = "avg"):
         self._y_max_override = y_max_bps
         self._scale = scale
+        self._total_duration_override = total_duration_sec
         self._y_min_bps = 0.0
         self._y_max_bps = y_max_bps or 8.0e12
 

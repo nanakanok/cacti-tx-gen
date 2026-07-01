@@ -28,11 +28,16 @@ def main():
               help="Y-axis maximum value (e.g., 4Tbps, 8Tbps). Auto-detected if omitted.")
 @click.option("--scale", type=click.Choice(SCALE_CHOICES), default=None,
               help="Graph time scale (auto-detected from filename if omitted).")
-def extract(image, output, ix, y_max, scale):
+@click.option("--total-duration", type=str, default=None,
+              help="Explicit total duration of graph (e.g., 550d, 27y). Overrides --scale duration.")
+@click.option("--series", type=click.Choice(["max", "avg", "min"]), default="avg",
+              help="Which series to extract from minmax graphs (default: avg).")
+def extract(image, output, ix, y_max, scale, total_duration, series):
     """Extract time-series data from an IX traffic graph image.
 
     IMAGE can be a local file path or an HTTPS URL.
     Supported scales: daily (24h), weekly (7d), monthly (30d), yearly (365d).
+    For JPIX minmax graphs, use --total-duration and --series.
     """
     image_path = _resolve_image(image)
     try:
@@ -44,7 +49,9 @@ def extract(image, output, ix, y_max, scale):
         time_scale = TimeScale(scale)
 
         y_max_bps = _parse_rate(y_max) if y_max else None
-        extractor = EXTRACTORS[ix](y_max_bps=y_max_bps, scale=time_scale)
+        total_dur_sec = _parse_total_duration(total_duration) if total_duration else None
+        extractor = EXTRACTORS[ix](y_max_bps=y_max_bps, scale=time_scale,
+                                   total_duration_sec=total_dur_sec, series=series)
         timeseries = extractor.extract(image_path)
 
         resample_interval = extractor._get_default_resample_interval()
@@ -52,6 +59,10 @@ def extract(image, output, ix, y_max, scale):
         timeseries["points"] = resampled_points
         timeseries["interval_sec"] = resample_interval
         timeseries["scale"] = scale
+        if total_dur_sec:
+            timeseries["total_duration_sec"] = total_dur_sec
+        if series != "avg":
+            timeseries["series"] = series
 
         data = json.dumps(timeseries, indent=2, ensure_ascii=False)
         if output:
@@ -158,7 +169,7 @@ def _detect_scale(image: str) -> str:
         return "monthly"
     if name.endswith(("_y.png", "_year.png")):
         return "yearly"
-    if "_year" in name:
+    if "_year" in name or "_history" in name:
         return "yearly"
     return "daily"
 
@@ -197,3 +208,27 @@ def _parse_duration(dur_str: str) -> float:
         if dur_str.endswith(suffix):
             return float(dur_str[: -len(suffix)]) * mult
     return float(dur_str)
+
+
+def _parse_total_duration(dur_str: str) -> float:
+    """Parse total duration like '550d', '18mo', '27y', '2y6mo' to seconds."""
+    import re
+    dur_str = dur_str.strip().lower()
+    total = 0.0
+    for match in re.finditer(r"([\d.]+)\s*(y|mo|d|h)", dur_str):
+        val = float(match.group(1))
+        unit = match.group(2)
+        if unit == "y":
+            total += val * 365 * 86400
+        elif unit == "mo":
+            total += val * 30 * 86400
+        elif unit == "d":
+            total += val * 86400
+        elif unit == "h":
+            total += val * 3600
+    if total > 0:
+        return total
+    try:
+        return float(dur_str)
+    except ValueError:
+        raise click.ClickException(f"Cannot parse total duration '{dur_str}'")

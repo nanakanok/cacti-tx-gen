@@ -3,7 +3,7 @@
 import pytest
 from click import ClickException
 
-from cacti_tx_gen.cli import _parse_rate, _parse_duration, _detect_ix, _detect_scale
+from cacti_tx_gen.cli import _parse_rate, _parse_duration, _parse_total_duration, _detect_ix, _detect_scale
 
 
 class TestParseRate:
@@ -95,3 +95,20 @@ class TestDetectScale:
 
     def test_unknown_defaults_daily(self):
         assert _detect_scale("unknown_graph.png") == "daily"
+
+
+class TestParseTotalDuration:
+    def test_days(self):
+        assert _parse_total_duration("550d") == 550 * 86400
+
+    def test_years(self):
+        assert _parse_total_duration("27y") == 27 * 365 * 86400
+
+    def test_months(self):
+        assert _parse_total_duration("18mo") == 18 * 30 * 86400
+
+    def test_combined(self):
+        assert _parse_total_duration("2y6mo") == (2 * 365 + 6 * 30) * 86400
+
+    def test_raw_seconds(self):
+        assert _parse_total_duration("86400") == 86400

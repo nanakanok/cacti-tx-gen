@@ -148,12 +148,26 @@ class BaseExtractor(ABC):
         return 0.0
 
     def _get_total_duration_sec(self) -> float:
-        """Total time span of the graph, determined by scale."""
+        """Total time span of the graph, determined by scale or override."""
+        override = getattr(self, "_total_duration_override", None)
+        if override is not None:
+            return float(override)
         scale = getattr(self, "_scale", TimeScale.DAILY)
         return float(SCALE_DURATION_SEC[scale])
 
     def _get_default_resample_interval(self) -> int:
         """Default resample interval for the current scale."""
+        override = getattr(self, "_total_duration_override", None)
+        if override is not None:
+            duration = override
+            if duration <= 86400:
+                return 300
+            elif duration <= 604800:
+                return 1800
+            elif duration <= 2592000:
+                return 7200
+            else:
+                return 86400
         scale = getattr(self, "_scale", TimeScale.DAILY)
         return SCALE_RESAMPLE_SEC[scale]
 
