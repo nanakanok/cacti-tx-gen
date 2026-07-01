@@ -153,7 +153,7 @@ Validated against known AVG/MAX values from each IX's stats text:
 | `generate/otg.py` | Done | OTG config generation: per-slice flows, rate scaling, time compression |
 | `convert/ns3.py` | Done | NS3 scenario generation: OnOffApplication with rate schedule |
 | `cli.py` | Done | CLI with `extract`, `generate`, `convert-ns3` subcommands; URL input, scale auto-detection |
-| Tests | Done | 102 tests (extract, generate, convert, CLI integration, utilities, scale detection) |
+| Tests | Done | 110 tests (extract, generate, convert, CLI integration, utilities, pipeline round-trip) |
 | TG validation | Done | Validated on ixia-c, TRex, xdperf via containerlab |
 
 ## Project Structure

@@ -35,7 +35,7 @@ pytest --cov=cacti_tx_gen
 | :--- | ---: | :--- |
 | `test_extract.py` | 33 | 各IXグラフからの時系列抽出 |
 | `test_generate.py` | 12 | OTG config 生成 |
-| `test_convert.py` | 9 | NS3 シナリオスクリプト変換 |
+| `test_convert.py` | 18 | NS3 シナリオスクリプト変換 + パイプライン round-trip |
 | `test_cli.py` | 11 | CLI コマンド (extract / generate / convert-ns3) |
 | `test_utils.py` | 18 | ユーティリティ関数 (parse_rate, detect_scale 等) |
 
@@ -69,10 +69,17 @@ pytest --cov=cacti_tx_gen
 
 `convert_to_ns3()` で OTG config → NS3 Python スクリプト変換。
 
+**TestConvertToNs3** — 単体テスト:
 - 生成コードが `compile()` を通る (構文的に正しい Python)
 - SCHEDULE、IP、protocol、packet size、link speed が出力に含まれる
 - TCP/UDP 切替
 - 空フローのエラー
+
+**TestPipelineRoundTrip** — extract → OTG → NS3 の end-to-end 形状一致テスト:
+- 各IXサンプル画像 (JPIX daily, BBIX daily, JPNAP daily, JPNAP yearly max, JPIX minmax avg) から抽出した時系列と、NS3 SCHEDULE のレートパターンの Pearson 相関係数が 0.90 以上であることを検証
+- peak rate スケーリング精度 (1%以内)
+- SCHEDULE の合計 duration がソース時系列と一致 (5%以内)
+- 全レートが正値
 
 ## test_cli.py
 
