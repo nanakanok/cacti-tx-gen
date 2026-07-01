@@ -1,0 +1,8 @@
+name: cacti-trex
+topology:
+  nodes:
+    trex:
+      kind: linux
+      image: fyzhang2001/snappi-trex
+  links:
+    - endpoints: ["trex:eth1", "trex:eth2"]

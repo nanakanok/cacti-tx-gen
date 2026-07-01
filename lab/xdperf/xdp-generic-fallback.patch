@@ -1,0 +1,17 @@
+--- a/pkg/xdperf/xdperf.go
++++ b/pkg/xdperf/xdperf.go
+@@ -293,6 +293,12 @@ func (x *Xdperf) startClient(ctx context.Context) error {
+ 	// dummy XDP Prog attachment
+ 	l, err := link.AttachXDP(link.XDPOptions{
+ 		Program:   rxprog,
+ 		Interface: x.Device.Index,
+ 	})
++	if err != nil {
++		l, err = link.AttachXDP(link.XDPOptions{
++			Program:   rxprog,
++			Interface: x.Device.Index,
++			Flags:     link.XDPGenericMode,
++		})
++	}
+ 	if err != nil {
+ 		return fmt.Errorf("failed to attach XDP program: %w", err)

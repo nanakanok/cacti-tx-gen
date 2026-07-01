@@ -109,7 +109,7 @@ Validated against known AVG/MAX values from each IX's stats text:
 | `convert/ns3.py` | Done | NS3 scenario generation: OnOffApplication with rate schedule |
 | `cli.py` | Done | CLI with `extract`, `generate`, `convert-ns3` subcommands |
 | Tests | Done | 64 tests (extract, generate, convert, CLI integration, utilities) |
-| TG validation | Planned | End-to-end test with ixia-c / TRex / xdperf |
+| TG validation | Done | Validated on ixia-c, TRex, xdperf via containerlab |
 
 ## Project Structure
 
@@ -129,13 +129,18 @@ cacti-tx-gen/
 │   │   └── otg.py              # OTG config generator
 │   └── convert/
 │       └── ns3.py              # NS3 scenario converter
-└── tests/
-    ├── fixtures/               # Sample IX graph PNGs
-    ├── test_extract.py         # Extractor unit tests
-    ├── test_generate.py        # OTG generation tests
-    ├── test_convert.py         # NS3 conversion tests
-    ├── test_cli.py             # CLI integration tests
-    └── test_utils.py           # Utility function tests
+├── tests/
+│   ├── fixtures/               # Sample IX graph PNGs
+│   ├── test_extract.py         # Extractor unit tests
+│   ├── test_generate.py        # OTG generation tests
+│   ├── test_convert.py         # NS3 conversion tests
+│   ├── test_cli.py             # CLI integration tests
+│   └── test_utils.py           # Utility function tests
+└── lab/
+    ├── capture.py              # sysfs-based traffic capture + matplotlib graph
+    ├── ixia-c/                 # ixia-c containerlab topology + snappi validate
+    ├── trex/                   # TRex containerlab topology + STL API validate
+    └── xdperf/                 # xdperf containerlab topology + OTG adapter
 ```
 
 ## Development
@@ -147,13 +152,41 @@ pip install -e ".[dev]"
 pytest
 ```
 
-## Traffic Generator Support
+## Traffic Generator Validation
 
-Priority order for integration testing:
+All three TGs validated on [containerlab](https://containerlab.dev/) with back-to-back veth topologies:
 
-1. **ixia-c** (Community Edition, Docker) — OTG native, first validation target
-2. **TRex** — via snappi-trex shim (stateless flows only)
-3. **xdperf** — requires custom OTG adapter (no native OTG support)
+| TG | Result | Method | Notes |
+|---|---|---|---|
+| **ixia-c** (Community Edition) | PASS | snappi API (OTG native) | 256 flows/port max, min rate 672 bps |
+| **TRex** v2.90 | PASS | STL API via container exec | snappi-trex lacks `fixed_seconds`; native STL used |
+| **xdperf** | PASS | Custom OTG adapter | Patched for XDP generic mode fallback on veth |
+
+### Lab topologies
+
+```bash
+# Deploy and validate
+containerlab deploy -t lab/ixia-c/topology.clab.yml
+python lab/ixia-c/validate.py
+
+containerlab deploy -t lab/trex/topology.clab.yml
+python lab/trex/validate.py --graph lab/trex/traffic_results.png
+
+containerlab deploy -t lab/xdperf/topology.clab.yml
+python lab/xdperf/validate.py
+```
+
+### xdperf generic mode patch
+
+xdperf's `AttachXDP` call doesn't fall back to generic mode when driver mode is unavailable (veth interfaces). The Dockerfile applies a patch that adds the same `XDPGenericMode` fallback that `probe/xdp.go` already implements.
+
+### Traffic graphing
+
+TRex validate supports `--graph` to plot per-second TX/RX rates from the TRex Stats API:
+
+```bash
+python lab/trex/validate.py --otg-config config.yaml --graph results.png
+```
 
 ## License
 
@@ -271,7 +304,7 @@ OTG 設定 YAML をスタンドアロン NS3 Python シナリオに変換。
 | `convert/ns3.py` | 完了 | NS3 シナリオ生成: レートスケジュール付き OnOffApplication |
 | `cli.py` | 完了 | `extract`、`generate`、`convert-ns3` サブコマンド付き CLI |
 | テスト | 完了 | 64 テスト（extract、generate、convert、CLI 統合、ユーティリティ） |
-| TG 実機検証 | 予定 | ixia-c / TRex / xdperf でのエンドツーエンドテスト |
+| TG 実機検証 | 完了 | ixia-c / TRex / xdperf を containerlab で検証済み |
 
 ## プロジェクト構成
 
@@ -291,13 +324,18 @@ cacti-tx-gen/
 │   │   └── otg.py              # OTG 設定ジェネレータ
 │   └── convert/
 │       └── ns3.py              # NS3 シナリオコンバータ
-└── tests/
-    ├── fixtures/               # IX グラフサンプル PNG
-    ├── test_extract.py         # Extractor ユニットテスト
-    ├── test_generate.py        # OTG 生成テスト
-    ├── test_convert.py         # NS3 変換テスト
-    ├── test_cli.py             # CLI 統合テスト
-    └── test_utils.py           # ユーティリティ関数テスト
+├── tests/
+│   ├── fixtures/               # IX グラフサンプル PNG
+│   ├── test_extract.py         # Extractor ユニットテスト
+│   ├── test_generate.py        # OTG 生成テスト
+│   ├── test_convert.py         # NS3 変換テスト
+│   ├── test_cli.py             # CLI 統合テスト
+│   └── test_utils.py           # ユーティリティ関数テスト
+└── lab/
+    ├── capture.py              # sysfs ベースのトラフィックキャプチャ + matplotlib グラフ
+    ├── ixia-c/                 # ixia-c containerlab トポロジ + snappi 検証
+    ├── trex/                   # TRex containerlab トポロジ + STL API 検証
+    └── xdperf/                 # xdperf containerlab トポロジ + OTG アダプタ
 ```
 
 ## 開発
@@ -309,12 +347,40 @@ pip install -e ".[dev]"
 pytest
 ```
 
-## トラフィックジェネレータ対応
+## トラフィックジェネレータ検証
 
-統合テストの優先順位:
+3 つの TG を [containerlab](https://containerlab.dev/) のバックトゥバック veth トポロジで検証済み:
 
-1. **ixia-c**（Community Edition、Docker）— OTG ネイティブ、最初の検証ターゲット
-2. **TRex** — snappi-trex シム経由（ステートレスフローのみ）
-3. **xdperf** — カスタム OTG アダプタが必要（OTG ネイティブ非対応）
+| TG | 結果 | 方式 | 備考 |
+|---|---|---|---|
+| **ixia-c**（Community Edition） | PASS | snappi API（OTG ネイティブ） | ポートあたり最大 256 フロー、最小レート 672 bps |
+| **TRex** v2.90 | PASS | STL API（コンテナ内実行） | snappi-trex は `fixed_seconds` 未対応のため STL API 直接使用 |
+| **xdperf** | PASS | カスタム OTG アダプタ | veth 用 XDP generic mode フォールバックパッチ適用 |
+
+### ラボトポロジ
+
+```bash
+# デプロイと検証
+containerlab deploy -t lab/ixia-c/topology.clab.yml
+python lab/ixia-c/validate.py
+
+containerlab deploy -t lab/trex/topology.clab.yml
+python lab/trex/validate.py --graph lab/trex/traffic_results.png
+
+containerlab deploy -t lab/xdperf/topology.clab.yml
+python lab/xdperf/validate.py
+```
+
+### xdperf generic mode パッチ
+
+xdperf の `AttachXDP` 呼び出しは、ドライバーモードが利用不可能な場合（veth インターフェース）に generic mode へフォールバックしません。Dockerfile で `probe/xdp.go` に既に実装されている `XDPGenericMode` フォールバックと同様のパッチを適用しています。
+
+### トラフィックグラフ化
+
+TRex validate は `--graph` オプションで TRex Stats API から 1 秒ごとの TX/RX レートをプロットできます:
+
+```bash
+python lab/trex/validate.py --otg-config config.yaml --graph results.png
+```
 
 </details>

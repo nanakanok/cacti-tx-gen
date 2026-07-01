@@ -1,0 +1,8 @@
+name: cacti-ixiac
+topology:
+  nodes:
+    ixia-c:
+      kind: keysight_ixia-c-one
+      image: ghcr.io/open-traffic-generator/ixia-c-one:1.58.0-1
+  links:
+    - endpoints: ["ixia-c:eth1", "ixia-c:eth2"]

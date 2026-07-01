@@ -6,3 +6,15 @@ build/
 .venv/
 .pytest_cache/
 *.egg
+
+# containerlab state directories
+lab/*/clab-*/
+
+# TRex external libs (extracted from container at runtime)
+lab/trex/trex_external_libs/
+lab/trex/trex_interactive/
+lab/trex/docker-compose.yml
+
+# Generated results (graphs, CSVs, timeseries)
+lab/**/traffic_results*
+lab/**/timeseries.json

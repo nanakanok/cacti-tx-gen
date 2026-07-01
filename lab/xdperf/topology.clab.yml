@@ -1,0 +1,11 @@
+name: cacti-xdperf
+topology:
+  nodes:
+    sender:
+      kind: linux
+      image: cacti-xdperf:latest
+    receiver:
+      kind: linux
+      image: cacti-xdperf:latest
+  links:
+    - endpoints: ["sender:eth1", "receiver:eth1"]
