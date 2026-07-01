@@ -1,5 +1,10 @@
 import json
+import tempfile
+from pathlib import Path
+from urllib.parse import urlparse
+
 import click
+import requests
 
 from cacti_tx_gen.extract import EXTRACTORS
 from cacti_tx_gen.generate.otg import generate_otg_config
@@ -12,7 +17,7 @@ def main():
 
 
 @main.command()
-@click.argument("image", type=click.Path(exists=True))
+@click.argument("image")
 @click.option("-o", "--output", type=click.Path(), default=None,
               help="Output JSON file (default: stdout)")
 @click.option("--ix", type=click.Choice(list(EXTRACTORS.keys())),
@@ -20,25 +25,33 @@ def main():
 @click.option("--y-max", type=str, default=None,
               help="Y-axis maximum value (e.g., 4Tbps, 8Tbps). Auto-detected if omitted.")
 def extract(image, output, ix, y_max):
-    """Extract time-series data from an IX traffic graph image."""
-    if ix is None:
-        ix = _detect_ix(image)
+    """Extract time-series data from an IX traffic graph image.
 
-    y_max_bps = _parse_rate(y_max) if y_max else None
-    extractor = EXTRACTORS[ix](y_max_bps=y_max_bps)
-    timeseries = extractor.extract(image)
+    IMAGE can be a local file path or an HTTPS URL.
+    """
+    image_path = _resolve_image(image)
+    try:
+        if ix is None:
+            ix = _detect_ix(image)
 
-    resampled_points = extractor._resample(timeseries["points"], 300)
-    timeseries["points"] = resampled_points
-    timeseries["interval_sec"] = 300
+        y_max_bps = _parse_rate(y_max) if y_max else None
+        extractor = EXTRACTORS[ix](y_max_bps=y_max_bps)
+        timeseries = extractor.extract(image_path)
 
-    data = json.dumps(timeseries, indent=2, ensure_ascii=False)
-    if output:
-        with open(output, "w") as f:
-            f.write(data)
-        click.echo(f"Wrote {output}")
-    else:
-        click.echo(data)
+        resampled_points = extractor._resample(timeseries["points"], 300)
+        timeseries["points"] = resampled_points
+        timeseries["interval_sec"] = 300
+
+        data = json.dumps(timeseries, indent=2, ensure_ascii=False)
+        if output:
+            with open(output, "w") as f:
+                f.write(data)
+            click.echo(f"Wrote {output}")
+        else:
+            click.echo(data)
+    finally:
+        if image_path != image:
+            Path(image_path).unlink(missing_ok=True)
 
 
 @main.command()
@@ -106,6 +119,23 @@ def convert_ns3_cmd(otg_config, output):
         click.echo(f"Wrote {output}")
     else:
         click.echo(script)
+
+
+def _resolve_image(image: str) -> str:
+    """Download image to a temp file if it's a URL, otherwise return as-is."""
+    parsed = urlparse(image)
+    if parsed.scheme in ("http", "https"):
+        resp = requests.get(image, timeout=30)
+        resp.raise_for_status()
+        suffix = Path(parsed.path).suffix or ".png"
+        tmp = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
+        tmp.write(resp.content)
+        tmp.close()
+        click.echo(f"Downloaded {image} ({len(resp.content)} bytes)")
+        return tmp.name
+    if not Path(image).exists():
+        raise click.ClickException(f"File not found: {image}")
+    return image
 
 
 def _detect_ix(image_path: str) -> str:
