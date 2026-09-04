@@ -73,6 +73,10 @@ slice count, which is a `--interval` choice, not a property of ns-3 or TRex.
 
 ## TRex
 
+![TRex vs schedule](trex_48.png)
+
+![TRex vs input](source_vs_trex_48.png)
+
 `sim/trex/trex-replay.py --mode chained` on TRex 2.90, same `otg_48.yaml`,
 veth pair inside the container:
 

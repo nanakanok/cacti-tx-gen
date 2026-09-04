@@ -63,8 +63,10 @@ sim/
     ├── per_slice_<tag>.csv         # written by analyze.py
     ├── input_waveform.png          # the extracted waveform on its own
     ├── extract_check.png           # that waveform laid over the graph it came from
-    ├── ns3_<tag>.png               # measured vs schedule, with the per-slice residual
-    ├── source_vs_output_<tag>.png  # source waveform vs what was transmitted
+    ├── ns3_<tag>.png               # ns-3 vs schedule, with the per-slice residual
+    ├── trex_<tag>.png              # TRex vs schedule, same layout
+    ├── source_vs_output_<tag>.png  # source waveform vs both outputs
+    ├── source_vs_trex_<tag>.png    # source waveform vs the TRex output alone
     ├── ns3_overlay.png             # all scales normalised to their own peak
     └── RESULTS.md                  # measured numbers
 ```
@@ -102,7 +104,8 @@ python sim/trex/trex-replay.py --config sim/input/otg_48.yaml --mode chained \
 # 4. compare and draw
 python sim/analyze.py 48
 python sim/plot.py --input                              # the input side on its own
-python sim/plot.py 48 --source
+python sim/plot.py 48 --source                          # input vs both outputs
+python sim/plot.py 48 --trex                            # TRex alone, and vs the input
 python sim/plot.py 48 100m 500m 1g --source --overlay
 ```
 
@@ -167,6 +170,11 @@ staircase around the input curve), and the rate scale is recovered by fitting th
 schedule to the source rather than by dividing the two peaks. The first and last
 live slice are left out of the residual: the extractor returns 0 bps outside the
 plotted fill, so a source value interpolated across that edge means nothing.
+
+`trex_<tag>.png` draws the TRex run against the schedule at two granularities at
+once: the 0.5 s port-counter samples and the same data averaged per slice. They
+sit on top of each other, which is the thing worth seeing — the rate is flat
+inside each burst, so the sampling granularity does not change the answer.
 
 TRex's port counters include the 4-byte FCS, which `plot.py` divides out, and its
 chained bursts advance on packet count rather than on a wall clock, so the run

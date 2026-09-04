@@ -7,6 +7,8 @@
     python sim/plot.py --source 48                 # -> sim/results/source_vs_output_48.png
     python sim/plot.py --input                     # -> sim/results/input_waveform.png
                                                    #    sim/results/extract_check.png
+    python sim/plot.py --trex 48                   # -> sim/results/trex_48.png
+                                                   #    sim/results/source_vs_trex_48.png
 
 Reads input/otg_<tag>.yaml and results/ns3_<tag>.csv; writes PNG next to the CSV.
 --source additionally overlays the waveform extracted from the source IX graph
@@ -14,6 +16,7 @@ Reads input/otg_<tag>.yaml and results/ns3_<tag>.csv; writes PNG next to the CSV
 --input draws the input side on its own: the extracted waveform, and the same
 waveform laid over the plot region of the IX graph it came from
 (input/jpnap_sample.png).
+--trex draws the TRex run on its own, and the TRex output over the input.
 """
 from __future__ import annotations
 
@@ -38,6 +41,7 @@ INK = "#12161c"
 MUTED = "#828b98"
 GRID = "#dde2e9"
 TREX = "#1baf7a"
+TREX_RAW = "#0d6b4b"
 SOURCE = "#12161c"
 
 # TRex port counters include the 4-byte FCS; the OTG rate refers to the 1400 B frame
@@ -82,7 +86,7 @@ def load_trex(tag: str, dur: float, n: int):
     """
     path = SIM / "results" / f"trex_{tag}.csv"
     if not path.exists():
-        return None, None
+        return None, None, None
     rows = list(csv.DictReader(path.open()))
     t = np.array([float(r["t"]) for r in rows])
     rx = np.array([float(r["rx_bps"]) for r in rows]) * TREX_FRAME_CORRECTION
@@ -99,7 +103,7 @@ def load_trex(tag: str, dur: float, n: int):
 
     grid = np.arange(0, dur, 0.1)
     shift = max(grid, key=lambda sh: np.corrcoef(binned(sh)[live], exp[live])[0, 1])
-    return binned(shift), float(shift)
+    return binned(shift), float(shift), (t + shift, rx)
 
 
 def style(ax):
@@ -304,18 +308,83 @@ def plot_input() -> list[Path]:
     return out
 
 
-def plot_source_vs_output(tag: str) -> Path:
+def plot_trex(tag: str) -> Path | None:
+    """The TRex run on its own: what the generator put on the wire against the
+    schedule it was given, at both the sampling and the slice granularity."""
+    exp, _, _, dur = load(tag)
+    n = len(exp)
+    live = exp > 1e5
+    trex, shift, raw = load_trex(tag, dur, n)
+    if trex is None:
+        print(f"  no results/trex_{tag}.csv — skipping the TRex figure")
+        return None
+    rt, rrx = raw
+    scale = 1e6
+    x = edges(n, dur)
+
+    fig, (ax, ax2) = plt.subplots(
+        2, 1, figsize=(11, 6.2), height_ratios=[3, 1], sharex=True,
+        gridspec_kw={"hspace": 0.12})
+    fig.patch.set_facecolor("white")
+
+    ax.fill_between(x, 0, steps(exp) / scale, color=SCHED_FILL, zorder=1,
+                    label="OTG schedule")
+    ax.plot(x, steps(exp) / scale, color=SCHED_LINE, linewidth=1.2, zorder=2)
+    # the per-slice line sits under the raw samples: they coincide almost
+    # exactly, which is the point - the rate is flat inside each burst
+    ax.plot(x, steps(trex) / scale, color=TREX, linewidth=3.2, alpha=0.55, zorder=3,
+            label="TRex rx, per slice")
+    ax.plot(rt, rrx / scale, color=TREX_RAW, linewidth=0.9, zorder=4,
+            label="TRex rx, 0.5 s samples")
+    style(ax)
+    ax.set_xlim(0, n * dur)
+    ax.set_ylim(0, max(exp.max(), trex.max()) / scale * 1.14)
+    ax.set_ylabel("Rate (Mbps)", color=INK, fontsize=10)
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK, loc="upper left", ncol=3)
+
+    err = (trex[live] - exp[live]) / exp[live] * 100
+    vol_s = (exp * dur).sum() / 8 / 1e9
+    vol_m = (trex * dur).sum() / 8 / 1e9
+    ax.set_title(
+        f"TRex replay of {SIM.name}/input/otg_{tag}.yaml — {n} chained burst "
+        f"streams, {dur:g}s each, peak {exp.max()/scale:.1f} Mbps\n"
+        f"per-slice median {np.median(err):+.2f}%, worst {np.abs(err).max():.2f}%, "
+        f"{vol_m:.4f} GB vs {vol_s:.4f} GB scheduled ({(vol_m-vol_s)/vol_s*100:+.2f}%), "
+        f"run finishes {shift:.1f}s early",
+        color=INK, fontsize=11, loc="left", pad=12)
+
+    e_all = np.where(live, (trex - exp) / np.where(live, exp, 1) * 100, np.nan)
+    ax2.axhline(0, color=SCHED_LINE, linewidth=1)
+    ax2.plot((np.arange(n) + 0.5) * dur, e_all, color=TREX, linewidth=1.4,
+             marker="o", markersize=2.5)
+    style(ax2)
+    ax2.set_ylabel("Error (%)", color=INK, fontsize=10)
+    ax2.set_xlabel("Replay time (s)", color=INK, fontsize=10)
+
+    out = SIM / "results" / f"trex_{tag}.png"
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    print(f"wrote {out.relative_to(SIM.parent)}")
+    return out
+
+
+def plot_source_vs_output(tag: str, engines: tuple[str, ...] = ("ns3", "trex"),
+                          out_name: str | None = None) -> Path:
     """The proof asked of the pipeline: does what came out match what went in?
 
     Overlays the waveform read off the source IX graph with the rate ns-3 and
-    TRex actually delivered, both mapped onto the same normalised axes so a
-    4 Tb/s IX day and a 200 Mbps replay can be compared directly.
+    TRex actually delivered, both mapped onto the same axes so a 4 Tb/s IX day
+    and a 200 Mbps replay can be compared directly. `engines` selects which
+    outputs to draw, so the TRex run can be shown against the input on its own.
     """
     exp, meas, _, dur = load(tag)
     n = len(exp)
     live = exp > 1e5
     total = n * dur
-    trex, shift = load_trex(tag, dur, n)
+    trex, shift, _ = load_trex(tag, dur, n)
+    if "trex" not in engines:
+        trex = None
+    show_ns3 = "ns3" in engines
 
     st, sbps = load_source()
     # Map the source onto the replay axis the way generate_otg_config does:
@@ -341,8 +410,9 @@ def plot_source_vs_output(tag: str) -> Path:
     ax.plot(st_r, sbps_r / scale, color=SOURCE, linewidth=1.4, zorder=5,
             label="input: source IX graph")
     x = edges(n, dur)
-    ax.plot(x, steps(meas) / scale, color=GOODPUT, linewidth=1.8, zorder=4,
-            label="output: ns-3 PacketSink")
+    if show_ns3:
+        ax.plot(x, steps(meas) / scale, color=GOODPUT, linewidth=1.8, zorder=4,
+                label="output: ns-3 PacketSink")
     if trex is not None:
         ax.plot(x, steps(trex) / scale, color=TREX, linewidth=1.8, zorder=3,
                 label=f"output: TRex rx (t{shift:+.1f}s)")
@@ -370,9 +440,12 @@ def plot_source_vs_output(tag: str) -> Path:
 
     r_ns3, e_ns3, rmse_ns3 = agree(meas)
     title = (f"input vs output — {tag}: {n} slices x {dur:g}s, "
-             f"peak {exp.max()/scale:.1f} Mbps\n"
-             f"ns-3  r={r_ns3:.5f}  median {np.median(e_ns3):+.2f}%  "
-             f"RMSE {rmse_ns3:.2f} Mbps")
+             f"peak {exp.max()/scale:.1f} Mbps")
+    if show_ns3:
+        title += (f"\nns-3  r={r_ns3:.5f}  median {np.median(e_ns3):+.2f}%  "
+                  f"RMSE {rmse_ns3:.2f} Mbps")
+    else:
+        title += "\n"
     if trex is not None:
         r_tx, e_tx, rmse_tx = agree(trex)
         title += (f"      TRex  r={r_tx:.5f}  median {np.median(e_tx):+.2f}%  "
@@ -380,9 +453,10 @@ def plot_source_vs_output(tag: str) -> Path:
     ax.set_title(title, color=INK, fontsize=11, loc="left", pad=12)
 
     ax2.axhline(0, color=SCHED_LINE, linewidth=1)
-    d_ns3 = np.where(ok, (meas - src_at) / np.where(ok, src_at, 1) * 100, np.nan)
-    ax2.plot(centres, d_ns3, color=GOODPUT, linewidth=1.4, marker="o", markersize=2.5,
-             label="ns-3")
+    if show_ns3:
+        d_ns3 = np.where(ok, (meas - src_at) / np.where(ok, src_at, 1) * 100, np.nan)
+        ax2.plot(centres, d_ns3, color=GOODPUT, linewidth=1.4, marker="o",
+                 markersize=2.5, label="ns-3")
     if trex is not None:
         d_tx = np.where(ok, (trex - src_at) / np.where(ok, src_at, 1) * 100, np.nan)
         ax2.plot(centres, d_tx, color=TREX, linewidth=1.4, marker="o", markersize=2.5,
@@ -392,12 +466,13 @@ def plot_source_vs_output(tag: str) -> Path:
     ax2.set_xlabel("Replay time (s)", color=INK, fontsize=10)
     ax2.legend(frameon=False, fontsize=9, labelcolor=INK, loc="upper left", ncol=2)
 
-    out = SIM / "results" / f"source_vs_output_{tag}.png"
+    out = SIM / "results" / (out_name or f"source_vs_output_{tag}.png")
     fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"wrote {out.relative_to(SIM.parent)}")
-    print(f"  ns-3 vs input : r={r_ns3:.6f}  median {np.median(e_ns3):+.2f}%  "
-          f"max|err| {np.abs(e_ns3).max():.2f}%  RMSE {rmse_ns3:.3f} Mbps")
+    if show_ns3:
+        print(f"  ns-3 vs input : r={r_ns3:.6f}  median {np.median(e_ns3):+.2f}%  "
+              f"max|err| {np.abs(e_ns3).max():.2f}%  RMSE {rmse_ns3:.3f} Mbps")
     if trex is not None:
         print(f"  TRex vs input : r={r_tx:.6f}  median {np.median(e_tx):+.2f}%  "
               f"max|err| {np.abs(e_tx).max():.2f}%  RMSE {rmse_tx:.3f} Mbps "
@@ -414,6 +489,8 @@ if __name__ == "__main__":
                     help="also overlay the source IX waveform with the measured output")
     ap.add_argument("--input", action="store_true",
                     help="draw the input waveform on its own and over the source PNG")
+    ap.add_argument("--trex", action="store_true",
+                    help="draw the TRex run on its own, and TRex against the input")
     a = ap.parse_args()
     tags = a.tags or ["48"]
     if a.input:
@@ -422,5 +499,9 @@ if __name__ == "__main__":
         plot_one(tag)
         if a.source:
             plot_source_vs_output(tag)
+        if a.trex:
+            if plot_trex(tag) is not None:
+                plot_source_vs_output(tag, engines=("trex",),
+                                      out_name=f"source_vs_trex_{tag}.png")
     if a.overlay and len(tags) > 1:
         plot_overlay(tags)
