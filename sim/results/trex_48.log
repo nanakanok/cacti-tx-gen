@@ -1,0 +1,4 @@
+flows=48 mode=chained total=288.0s peak=198.8 Mbps
+wall=292.19s (nominal 288.0s)
+totals: {'ipackets': 3389512, 'ibytes': 4758869528, 'obytes': 4758869232, 'opackets': 3389508}
+wrote sim/results/trex_48.csv

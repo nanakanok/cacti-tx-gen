@@ -1,0 +1,3 @@
+slices=48 total=288s peak=0.198776Gbps link=0.397552Gbps sample=1s
+sink_rx_bytes=4745227200 wire_bytes=4846910640 wire_pkts=3389448
+goodput_avg_bps=1.31812e+08 wire_avg_bps=1.34636e+08

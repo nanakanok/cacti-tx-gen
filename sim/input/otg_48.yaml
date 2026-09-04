@@ -1,0 +1,1350 @@
+flows:
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0000
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 1
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0001
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 1
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0002
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 109809568
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0003
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 90175833
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0004
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 84233296
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0005
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 88754955
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0006
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 97606096
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0007
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 107549737
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0008
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 136932642
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0009
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 149724000
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0010
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 149777793
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0011
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 154100149
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0012
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 153722744
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0013
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 154364514
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0014
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 160606962
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0015
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 159953364
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0016
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 159713037
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0017
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 162291062
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0018
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 160145743
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0019
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 164130175
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0020
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 166361296
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0021
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 164154572
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0022
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 170214647
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0023
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 176679189
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0024
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 186816661
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0025
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 196770300
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0026
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 198776165
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0027
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 195403408
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0028
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 188769816
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0029
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 179685828
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0030
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 152752687
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0031
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 132242964
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0032
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 111436295
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0033
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 99048019
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0034
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 88715112
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0035
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 81195061
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0036
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 77244599
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0037
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 81671655
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0038
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 95330775
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0039
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 102867076
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0040
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 111010906
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0041
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 133216241
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0042
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 157908752
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0043
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 155042112
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0044
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 157599908
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0045
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 160772848
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0046
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 161737833
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+- duration:
+    fixed_seconds:
+      seconds: 6.0
+  name: slice_0047
+  packet:
+  - ethernet:
+      dst:
+        value: 00:00:02:00:00:01
+      src:
+        value: 00:00:01:00:00:01
+  - ipv4:
+      dst:
+        value: 10.0.0.2
+      src:
+        value: 10.0.0.1
+  - udp:
+      dst_port:
+        value: 12001
+      src_port:
+        value: 12000
+  rate:
+    bps: 1
+  size:
+    fixed: 1400
+  tx_rx:
+    port:
+      rx_name: rx
+      tx_name: tx
+ports:
+- location: localhost:5555
+  name: tx
+- location: localhost:5556
+  name: rx
