@@ -53,13 +53,16 @@ sim/
 ├── ns3/cacti-replay.cc             # the scenario (copy into ns-3 scratch/ to build)
 ├── trex/trex-replay.py             # plays the same OTG config on TRex
 ├── input/
-│   ├── ts_jpnap.json               # timeseries extracted from tests/fixtures/jpnap_sample.png
-│   ├── otg_<tag>.yaml              # OTG config generated from it
+│   ├── jpnap_sample.png            # the IX traffic graph everything starts from
+│   ├── ts_jpnap.json               # waveform extracted from it
+│   ├── otg_<tag>.yaml              # OTG config generated from that waveform
 │   └── sched_<tag>.csv             # rate_bps,duration_sec per slice, fed to the scenario
 └── results/
     ├── ns3_<tag>.csv / .log        # t,goodput_bps,wire_bps sampled during the run
     ├── trex_48.csv / .log          # t,tx_bps,rx_bps from the TRex port counters
     ├── per_slice_<tag>.csv         # written by analyze.py
+    ├── input_waveform.png          # the extracted waveform on its own
+    ├── extract_check.png           # that waveform laid over the graph it came from
     ├── ns3_<tag>.png               # measured vs schedule, with the per-slice residual
     ├── source_vs_output_<tag>.png  # source waveform vs what was transmitted
     ├── ns3_overlay.png             # all scales normalised to their own peak
@@ -74,7 +77,7 @@ at 100 Mbps, 500 Mbps and 1 Gbps peaks.
 
 ```bash
 # 1. inputs (already committed under input/, regenerate if you want other scales)
-cacti-tx-gen extract tests/fixtures/jpnap_sample.png --ix jpnap -o sim/input/ts_jpnap.json
+cacti-tx-gen extract sim/input/jpnap_sample.png --ix jpnap -o sim/input/ts_jpnap.json
 cacti-tx-gen generate sim/input/ts_jpnap.json \
     --peak-rate 200Mbps --interval 1800 --duration 288s -o sim/input/otg_48.yaml
 python - <<'PY'
@@ -98,6 +101,7 @@ python sim/trex/trex-replay.py --config sim/input/otg_48.yaml --mode chained \
 
 # 4. compare and draw
 python sim/analyze.py 48
+python sim/plot.py --input                              # the input side on its own
 python sim/plot.py 48 --source
 python sim/plot.py 48 100m 500m 1g --source --overlay
 ```
@@ -111,6 +115,31 @@ schedule runs inside the TRex engine off a single `start()`. `--mode client`
 reproduces what `lab/trex/validate.py` does — one flow at a time driven from the
 client — for comparison. Neither is needed for ns-3, which gets the time axis
 from the scenario itself.
+
+## The input
+
+`input/jpnap_sample.png` is the graph the whole pipeline starts from — a copy of
+`tests/fixtures/jpnap_sample.png`, kept here so a run is reproducible from this
+directory alone. `results/extract_check.png` lays the extracted waveform over
+that PNG's detected plot region, which is the cheapest way to see whether the
+extraction is following the right boundary; `results/input_waveform.png` is the
+waveform on its own against the max/mean the graph prints in its own stats table.
+
+Two properties of this fixture carry through every measurement below:
+
+- The extracted peak is 4.9% under the stated 4.03 Tb/s and the mean 1.1% under
+  the stated 2.71 Tb/s. The replay reproduces the extracted waveform, so it
+  inherits that.
+- 8 leading and 2 trailing samples come back as 0 bps — pixel columns outside the
+  plotted fill — which is where the dead slices at the start and end of every
+  replay come from, and why the extracted minimum (0.745 Tb/s against a stated
+  1.39) is not usable.
+
+The time axis is the tool's, not the graph's: this graph actually spans 32 h
+(06/30 04:00 to 07/01 12:00) while `--scale daily` assumes 24 h. Nothing here
+depends on it — `generate --duration` rescales the axis anyway, and the rates are
+untouched — but an absolute-time reading of `ts_jpnap.json` would be wrong by a
+third.
 
 ## Reading the numbers
 

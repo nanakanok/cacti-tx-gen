@@ -5,10 +5,15 @@
     python sim/plot.py 48 100m 500m 1g
     python sim/plot.py --overlay 48 100m 500m 1g   # -> sim/results/ns3_overlay.png
     python sim/plot.py --source 48                 # -> sim/results/source_vs_output_48.png
+    python sim/plot.py --input                     # -> sim/results/input_waveform.png
+                                                   #    sim/results/extract_check.png
 
 Reads input/otg_<tag>.yaml and results/ns3_<tag>.csv; writes PNG next to the CSV.
 --source additionally overlays the waveform extracted from the source IX graph
 (input/ts_jpnap.json) with what ns-3 and TRex actually transmitted.
+--input draws the input side on its own: the extracted waveform, and the same
+waveform laid over the plot region of the IX graph it came from
+(input/jpnap_sample.png).
 """
 from __future__ import annotations
 
@@ -204,6 +209,101 @@ def plot_overlay(tags: list[str]) -> Path:
     return out
 
 
+# Values printed on the source graph's own stats table, for the annotation
+SOURCE_STATS = {"max": 4.03e12, "mean": 2.71e12, "min": 1.39e12}
+SOURCE_IMAGE = "jpnap_sample.png"
+
+
+def plot_input() -> list[Path]:
+    """Draw the input side on its own.
+
+    input_waveform.png  the extracted timeseries, in the source's own units
+    extract_check.png   the same curve over the plot region of the PNG it was
+                        read from, which is what makes the extraction checkable
+                        by eye rather than only by the accuracy table
+    """
+    t, bps = load_source()
+    hours = t / 3600
+    live = bps > 0
+    idx = np.flatnonzero(live)
+    v = bps[live]
+    out = []
+
+    fig, ax = plt.subplots(figsize=(11, 4.4))
+    fig.patch.set_facecolor("white")
+    ax.fill_between(hours, 0, bps / 1e12, color=SCHED_FILL, zorder=1)
+    ax.plot(hours, bps / 1e12, color=SOURCE, linewidth=1.5, zorder=3)
+    for edge in (hours[: idx[0] + 1], hours[idx[-1]:]):
+        if len(edge) > 1:
+            ax.axvspan(edge[0], edge[-1], color=WIRE, alpha=0.10, zorder=0)
+    for name, colour in (("max", WIRE), ("mean", GOODPUT)):
+        ax.axhline(SOURCE_STATS[name] / 1e12, color=colour, linewidth=1.1,
+                   linestyle="--", zorder=2,
+                   label=f"graph's stated {name} {SOURCE_STATS[name]/1e12:.2f} Tb/s")
+    style(ax)
+    ax.set_xlim(0, hours[-1])
+    ax.set_ylim(0, max(bps.max(), SOURCE_STATS["max"]) / 1e12 * 1.12)
+    ax.set_xlabel("Extracted time base (h) — --scale daily assumes 24 h",
+                  color=INK, fontsize=10)
+    ax.set_ylabel("Rate (Tb/s)", color=INK, fontsize=10)
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK, loc="lower right", ncol=2)
+    ax.set_title(
+        f"input waveform — {len(t)} samples from {SOURCE_IMAGE}\n"
+        f"extracted max {v.max()/1e12:.3f} / mean {v.mean()/1e12:.3f} Tb/s "
+        f"({(v.max()-SOURCE_STATS['max'])/SOURCE_STATS['max']*100:+.1f}% / "
+        f"{(v.mean()-SOURCE_STATS['mean'])/SOURCE_STATS['mean']*100:+.1f}% vs the "
+        f"graph), shaded: {idx[0]} leading + {len(t)-1-idx[-1]} trailing samples "
+        f"read back as 0",
+        color=INK, fontsize=11, loc="left", pad=12)
+    dst = SIM / "results" / "input_waveform.png"
+    fig.savefig(dst, dpi=150, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    print(f"wrote {dst.relative_to(SIM.parent)}")
+    out.append(dst)
+
+    src_png = SIM / "input" / SOURCE_IMAGE
+    try:
+        import cv2
+        from cacti_tx_gen.extract.jpnap import JPNAPExtractor
+    except ImportError as exc:
+        print(f"  skipping extract_check.png ({exc}); install the package to draw it")
+        return out
+    img = cv2.imread(str(src_png))
+    if img is None:
+        print(f"  skipping extract_check.png ({src_png} not readable)")
+        return out
+    region = JPNAPExtractor()._detect_plot_region(img)
+    import json
+    y_max = json.loads((SIM / "input" / "ts_jpnap.json").read_text())["y_axis_max_bps"]
+    crop = cv2.cvtColor(img[region["y0"]:region["y1"], region["x0"]:region["x1"]],
+                        cv2.COLOR_BGR2RGB)
+
+    fig, ax = plt.subplots(figsize=(11, 4.6))
+    fig.patch.set_facecolor("white")
+    ax.imshow(crop, extent=(0, hours[-1], 0, y_max / 1e12), aspect="auto",
+              interpolation="antialiased", zorder=1)
+    ax.plot(hours, bps / 1e12, color=GOODPUT, linewidth=1.8, zorder=2,
+            label="extracted waveform")
+    style(ax)
+    ax.grid(False)
+    ax.set_xlim(0, hours[-1])
+    ax.set_ylim(0, y_max / 1e12)
+    ax.set_xlabel("Extracted time base (h)", color=INK, fontsize=10)
+    ax.set_ylabel("Rate (Tb/s)", color=INK, fontsize=10)
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK, loc="upper left")
+    ax.set_title(
+        f"extraction check — {SOURCE_IMAGE} plot region "
+        f"x[{region['x0']}:{region['x1']}] y[{region['y0']}:{region['y1']}], "
+        f"y-axis full scale {y_max/1e12:.2f} Tb/s",
+        color=INK, fontsize=11, loc="left", pad=12)
+    dst = SIM / "results" / "extract_check.png"
+    fig.savefig(dst, dpi=150, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    print(f"wrote {dst.relative_to(SIM.parent)}")
+    out.append(dst)
+    return out
+
+
 def plot_source_vs_output(tag: str) -> Path:
     """The proof asked of the pipeline: does what came out match what went in?
 
@@ -312,8 +412,12 @@ if __name__ == "__main__":
                     help="also draw all tags normalised on one axis")
     ap.add_argument("--source", action="store_true",
                     help="also overlay the source IX waveform with the measured output")
+    ap.add_argument("--input", action="store_true",
+                    help="draw the input waveform on its own and over the source PNG")
     a = ap.parse_args()
     tags = a.tags or ["48"]
+    if a.input:
+        plot_input()
     for tag in tags:
         plot_one(tag)
         if a.source:

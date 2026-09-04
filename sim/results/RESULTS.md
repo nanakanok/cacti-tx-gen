@@ -1,10 +1,26 @@
 # Replay results — ns-3 and TRex
 
-Source: `tests/fixtures/jpnap_sample.png` (JPNAP Tokyo Total, daily, stated
+Source: `input/jpnap_sample.png` (a copy of `tests/fixtures/jpnap_sample.png` —
+JPNAP Tokyo Total, daily, stated
 max 4.03 Tb/s / mean 2.71 Tb/s). Extracted with `cacti-tx-gen extract`, scaled by
 `cacti-tx-gen generate`, replayed by `ns3/cacti-replay.cc` on ns-3.42 (optimized).
 Frame payload 1400 B, UDP, link = 2 x peak slice rate, 1 ms delay,
 DropTail 1000p. Regenerate every number below with `python sim/analyze.py`.
+
+## Input
+
+![input waveform](input_waveform.png)
+
+288 samples read off `input/jpnap_sample.png`. Against the values the graph prints
+itself: extracted max 3.834 Tb/s (−4.9%), mean 2.681 Tb/s (−1.1%) over the valid
+samples, shape ratio mean/max 0.6995 against the graph's 0.6725. The shaded bands
+are the 8 leading and 2 trailing samples the extractor returns as 0.
+
+![extraction check](extract_check.png)
+
+The same waveform over the plot region it was read from — the check that the
+extractor is tracking the top of the fill and not a gridline or a neighbouring
+band.
 
 ## Per-slice rate and total volume
 
