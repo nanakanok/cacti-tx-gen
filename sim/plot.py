@@ -127,7 +127,11 @@ def steps(v):
 
 
 def plot_one(tag: str) -> Path:
-    exp, meas, wire, dur = load(tag)
+    # `wire` is measured and kept in the CSVs, but the figure plots the schedule
+    # against the PacketSink only: the two are the same quantity, while the wire
+    # rate is that plus framing, so drawing it here invites reading a constant
+    # +2.14% header overhead as replay error. See RESULTS.md for the wire numbers.
+    exp, meas, _wire, dur = load(tag)
     n = len(exp)
     live = exp > 1e5
     x = edges(n, dur)
@@ -142,15 +146,13 @@ def plot_one(tag: str) -> Path:
     ax.fill_between(x, 0, steps(exp) / scale, color=SCHED_FILL, step=None,
                     label="OTG schedule", zorder=1)
     ax.plot(x, steps(exp) / scale, color=SCHED_LINE, linewidth=1.2, zorder=2)
-    ax.plot(x, steps(wire) / scale, color=WIRE, linewidth=1.6,
-            label="ns-3 NetDevice (wire)", zorder=3)
     ax.plot(x, steps(meas) / scale, color=GOODPUT, linewidth=1.8,
-            label="ns-3 PacketSink (goodput)", zorder=4)
+            label="ns-3 PacketSink", zorder=4)
     style(ax)
     ax.set_ylabel("Rate (Mbps)", color=INK, fontsize=10)
     ax.set_xlim(0, n * dur)
-    ax.set_ylim(0, max(exp.max(), wire.max()) / scale * 1.12)
-    ax.legend(frameon=False, fontsize=9, labelcolor=INK, loc="upper left", ncol=3)
+    ax.set_ylim(0, exp.max() / scale * 1.12)
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK, loc="upper left", ncol=2)
 
     vol_s = (exp * dur).sum() / 8 / 1e9
     vol_m = (meas * dur).sum() / 8 / 1e9
@@ -164,17 +166,12 @@ def plot_one(tag: str) -> Path:
     )
 
     e_all = np.where(live, (meas - exp) / np.where(live, exp, 1) * 100, np.nan)
-    ew_all = np.where(live, (wire - exp) / np.where(live, exp, 1) * 100, np.nan)
     centers = (np.arange(n) + 0.5) * dur
     ax2.axhline(0, color=SCHED_LINE, linewidth=1)
-    ax2.plot(centers, ew_all, color=WIRE, linewidth=1.4, marker="o", markersize=2.5,
-             label="wire")
-    ax2.plot(centers, e_all, color=GOODPUT, linewidth=1.4, marker="o", markersize=2.5,
-             label="goodput")
+    ax2.plot(centers, e_all, color=GOODPUT, linewidth=1.4, marker="o", markersize=2.5)
     style(ax2)
-    ax2.set_ylabel("Error (%)", color=INK, fontsize=10)
+    ax2.set_ylabel("PacketSink − schedule (%)", color=INK, fontsize=10)
     ax2.set_xlabel("Time (s)", color=INK, fontsize=10)
-    ax2.legend(frameon=False, fontsize=9, labelcolor=INK, loc="upper left", ncol=2)
 
     out = SIM / "results" / f"ns3_{tag}.png"
     fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="white")

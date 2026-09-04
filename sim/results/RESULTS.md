@@ -24,6 +24,8 @@ band.
 
 ## Per-slice rate and total volume
 
+![ns-3 vs schedule](ns3_48.png)
+
 `err` is per-slice measured vs scheduled rate, over the slices carrying a real
 rate (the 1 bps edge slices are excluded — see README).
 
@@ -43,6 +45,10 @@ rate (the 1 bps edge slices are excluded — see README).
 
 No drops in any run: the link is provisioned at twice the peak slice rate, so the
 device queue never builds.
+
+The figure plots the schedule against the PacketSink only. The wire column above
+is the same traffic plus IP + UDP + PPP framing — a constant offset, not a
+replay error — so it stays in the table and out of the plot.
 
 ## Input vs output
 

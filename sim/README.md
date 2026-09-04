@@ -63,7 +63,7 @@ sim/
     ├── per_slice_<tag>.csv         # written by analyze.py
     ├── input_waveform.png          # the extracted waveform on its own
     ├── extract_check.png           # that waveform laid over the graph it came from
-    ├── ns3_<tag>.png               # ns-3 vs schedule, with the per-slice residual
+    ├── ns3_<tag>.png               # schedule vs PacketSink, with the residual
     ├── trex_<tag>.png              # TRex vs schedule, same layout
     ├── source_vs_output_<tag>.png  # source waveform vs both outputs
     ├── source_vs_trex_<tag>.png    # source waveform vs the TRex output alone
@@ -161,6 +161,13 @@ rate on the wire, so the same config moves a measurably different number of
 application bytes in ns-3 than it does on a generator. Compare against
 `goodput_bps` when the question is "how much data did the application move" and
 against `wire_bps` when it is "how loaded was the link".
+
+`ns3_<tag>.png` plots the schedule against `goodput_bps` only. Those two are the
+same quantity, so the residual there is replay error and nothing else; drawing
+`wire_bps` on the same axis would put a constant +2.14% of framing next to it and
+invite reading header overhead as error. The wire numbers are in `RESULTS.md`,
+in every `ns3_<tag>.csv`, and in the `wire_err_pct` column of
+`per_slice_<tag>.csv`.
 
 `source_vs_output_<tag>.png` compares against the *input* rather than against the
 schedule, so it has to undo what `generate` did: the source is placed on the
